@@ -1,20 +1,20 @@
-# ChatGPT2API - Ban Viet hoa
+# ChatGPT2API - Bản Việt hóa
 
-Fork nay la ban Viet hoa giao dien va thong bao nguoi dung cua `basketikun/chatgpt2api`.
+Fork này là bản Việt hóa giao diện và thông báo người dùng của `basketikun/chatgpt2api`.
 
-> Luu y: Du an dua tren viec nghien cuu/reverse engineer cac endpoint web cua ChatGPT. Chi dung cho muc dich hoc tap, nghien cuu ca nhan va phi thuong mai. Viec su dung co the gay rui ro bi gioi han, tam khoa hoac khoa tai khoan. Khong dung tai khoan quan trong.
+> Lưu ý: Dự án dựa trên việc nghiên cứu/reverse engineer các endpoint web của ChatGPT. Chỉ dùng cho mục đích học tập, nghiên cứu cá nhân và phi thương mại. Việc sử dụng có thể gây rủi ro bị giới hạn, tạm khóa hoặc khóa tài khoản. Không dùng tài khoản quan trọng.
 
-## Tinh nang chinh
+## Tính năng chính
 
-- Giao dien web tieng Viet.
-- API tuong thich OpenAI cho tao anh va sua anh.
-- Quan ly nhieu tai khoan/access token.
-- Trang ve anh truc tiep, lich su anh, quan ly anh.
-- Cau hinh proxy, backup, Sub2API/CPA, user key.
+- Giao diện web tiếng Việt.
+- API tương thích OpenAI cho tạo ảnh và sửa ảnh.
+- Quản lý nhiều tài khoản/access token.
+- Trang vẽ ảnh trực tiếp, lịch sử ảnh, quản lý ảnh.
+- Cấu hình proxy, backup, Sub2API/CPA, user key.
 
-## Chay bang Docker
+## Chạy bằng Docker
 
-Fork nay da cau hinh `docker-compose.yml` de build tu source local, vi vay nguoi dung se chay dung ban Viet hoa.
+Fork này đã cấu hình `docker-compose.yml` để build từ source local, vì vậy người dùng sẽ chạy đúng bản Việt hóa.
 
 ```bash
 git clone https://github.com/anhphuongtranle99z-del/chatgpt2api.git
@@ -22,15 +22,15 @@ cd chatgpt2api
 docker compose up -d --build
 ```
 
-Dia chi sau khi chay:
+Địa chỉ sau khi chạy:
 
 - Web UI: `http://localhost:3000`
 - API: `http://localhost:3000/v1`
-- Thu muc du lieu: `./data`
+- Thư mục dữ liệu: `./data`
 
-Truoc khi public server, hay doi `auth-key` trong `config.json`, hoac cau hinh bien moi truong `CHATGPT2API_AUTH_KEY`.
+Trước khi public server, hãy đổi `auth-key` trong `config.json`, hoặc cấu hình biến môi trường `CHATGPT2API_AUTH_KEY`.
 
-## Chay local de dev
+## Chạy local để dev
 
 Backend:
 
@@ -47,36 +47,36 @@ npm install
 npm run dev
 ```
 
-Mac dinh frontend dev goi backend tai `http://127.0.0.1:8000`.
+Mặc định frontend dev gọi backend tại `http://127.0.0.1:8000`.
 
-## Cach dung nhanh
+## Cách dùng nhanh
 
-1. Mo web UI.
-2. Dang nhap bang `auth-key` trong `config.json`.
-3. Vao `Quan ly tai khoan` de import access token.
-4. Vao `Ve anh` de tao/sua anh.
-5. Khi goi API, them header:
+1. Mở web UI.
+2. Đăng nhập bằng `auth-key` trong `config.json`.
+3. Vào `Quản lý tài khoản` để import access token.
+4. Vào `Vẽ ảnh` để tạo/sửa ảnh.
+5. Khi gọi API, thêm header:
 
 ```http
 Authorization: Bearer <auth-key>
 ```
 
-Vi du:
+Ví dụ:
 
 ```bash
 curl http://localhost:3000/v1/models \
   -H "Authorization: Bearer <auth-key>"
 ```
 
-## Ghi chu ve Docker image
+## Ghi chú về Docker image
 
-`docker-compose.yml` cua fork nay build image local `chatgpt2api-vietnamese:latest`.
-Neu ban doi code, chay lai:
+`docker-compose.yml` của fork này build image local `chatgpt2api-vietnamese:latest`.
+Nếu bạn đổi code, chạy lại:
 
 ```bash
 docker compose up -d --build
 ```
 
-## Nguon goc
+## Nguồn gốc
 
-Du an goc: https://github.com/basketikun/chatgpt2api
+Dự án gốc: https://github.com/basketikun/chatgpt2api
