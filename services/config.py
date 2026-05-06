@@ -121,8 +121,8 @@ def _load_settings() -> LoadedSettings:
     auth_key = _normalize_auth_key(os.getenv("CHATGPT2API_AUTH_KEY") or raw_config.get("auth-key"))
     if _is_invalid_auth_key(auth_key):
         raise ValueError(
-            "❌ auth-key 未设置！\n"
-            "请在环境变量 CHATGPT2API_AUTH_KEY 中设置，或者在 config.json 中填写 auth-key。"
+            "❌ auth-key chưa được thiết lập!\n"
+            "Hãy thiết lập trong biến môi trường CHATGPT2API_AUTH_KEY hoặc điền auth-key trong config.json."
         )
 
     try:
@@ -144,11 +144,11 @@ class ConfigStore:
         self._storage_backend: StorageBackend | None = None
         if _is_invalid_auth_key(self.auth_key):
             raise ValueError(
-                "❌ auth-key 未设置！\n"
-                "请按以下任意一种方式解决：\n"
-                "1. 在 Render 的 Environment 变量中添加：\n"
+                "❌ auth-key chưa được thiết lập!\n"
+                "Hãy xử lý bằng một trong các cách sau:\n"
+                "1. Thêm vào biến Environment trên Render:\n"
                 "   CHATGPT2API_AUTH_KEY = your_real_auth_key\n"
-                "2. 或者在 config.json 中填写：\n"
+                "2. Hoặc điền trong config.json:\n"
                 '   "auth-key": "your_real_auth_key"'
             )
 
@@ -305,7 +305,7 @@ class ConfigStore:
         return _normalize_backup_settings(self.data.get("backup"))
 
     def get_storage_backend(self) -> StorageBackend:
-        """获取存储后端实例（单例）"""
+        """Lấy instance backend lưu trữ (singleton)"""
         if self._storage_backend is None:
             from services.storage.factory import create_storage_backend
             self._storage_backend = create_storage_backend(DATA_DIR)

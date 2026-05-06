@@ -5,34 +5,34 @@ from typing import Any
 
 
 class StorageBackend(ABC):
-    """抽象存储后端基类"""
+    """Abstract storage backend base class."""
 
     @abstractmethod
     def load_accounts(self) -> list[dict[str, Any]]:
-        """加载所有账号数据"""
+        """Load all account data."""
         pass
 
     @abstractmethod
     def save_accounts(self, accounts: list[dict[str, Any]]) -> None:
-        """保存所有账号数据"""
+        """Save all account data."""
         pass
 
     @abstractmethod
     def load_auth_keys(self) -> list[dict[str, Any]]:
-        """加载所有鉴权密钥数据"""
+        """Load all auth key data."""
         pass
 
     @abstractmethod
     def save_auth_keys(self, auth_keys: list[dict[str, Any]]) -> None:
-        """保存所有鉴权密钥数据"""
+        """Save all auth key data."""
         pass
 
     @abstractmethod
     def health_check(self) -> dict[str, Any]:
-        """健康检查，返回存储后端状态"""
+        """Run a health check and return backend status."""
         pass
 
     @abstractmethod
     def get_backend_info(self) -> dict[str, Any]:
-        """获取存储后端信息"""
+        """Return storage backend information."""
         pass

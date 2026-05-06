@@ -87,7 +87,7 @@ function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("读取参考图失败"));
+    reader.onerror = () => reject(new Error("Không thể đọc ảnh tham chiếu"));
     reader.readAsDataURL(file);
   });
 }
@@ -118,7 +118,7 @@ function buildReferenceImageFromResult(image: StoredImage, fileName: string): St
 async function fetchImageAsFile(url: string, fileName: string) {
   const response = await fetch(url);
   if (!response.ok) {
-    throw new Error("读取结果图失败");
+    throw new Error("Không thể đọc ảnh kết quả");
   }
   const blob = await response.blob();
   return new File([blob], fileName, { type: blob.type || "image/png" });
@@ -155,7 +155,7 @@ function taskDataToStoredImage(image: StoredImage, task: ImageTask): StoredImage
         ...image,
         taskId: task.id,
         status: "error",
-        error: "未返回图片数据",
+        error: "Không nhận được dữ liệu ảnh",
       };
     }
     return {
@@ -174,7 +174,7 @@ function taskDataToStoredImage(image: StoredImage, task: ImageTask): StoredImage
       ...image,
       taskId: task.id,
       status: "error",
-      error: task.error || "生成失败",
+      error: task.error || "Tạo ảnh thất bại",
     };
   }
 
@@ -209,7 +209,7 @@ function deriveTurnStatus(turn: ImageTurn): Pick<ImageTurn, "status" | "error"> 
     return { status: turn.status === "queued" ? "queued" : "generating", error: undefined };
   }
   if (failedCount > 0) {
-    return { status: "error", error: `其中 ${failedCount} 张未成功生成` };
+    return { status: "error", error: `Có ${failedCount} ảnh chưa tạo thành công` };
   }
   if (successCount > 0) {
     return { status: "success", error: undefined };
@@ -302,7 +302,7 @@ async function recoverConversationHistory(items: ImageConversation[]) {
         return {
           ...image,
           status: "error" as const,
-          error: "页面刷新或任务中断，未找到可恢复的任务 ID",
+          error: "Trang đã làm mới hoặc tác vụ bị gián đoạn, không tìm thấy ID tác vụ để khôi phục",
         };
       });
       const derived = deriveTurnStatus({ ...turn, images });
@@ -352,7 +352,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
   const [conversations, setConversations] = useState<ImageConversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
-  const [availableQuota, setAvailableQuota] = useState("加载中...");
+  const [availableQuota, setAvailableQuota] = useState("Đang tải...");
   const [lightboxImages, setLightboxImages] = useState<ImageLightboxItem[]>([]);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -379,23 +379,23 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
   );
   const deleteConfirmTitle =
     deleteConfirm?.type === "all"
-      ? "清空历史记录"
+      ? "Xóa toàn bộ lịch sử"
       : deleteConfirm?.type === "prompt"
-        ? "删除提示词记录"
+        ? "Xóa bản ghi lời nhắc"
         : deleteConfirm?.type === "results"
-          ? "删除生成结果"
+          ? "Xóa kết quả đã tạo"
           : deleteConfirm?.type === "one"
-            ? "删除对话"
+            ? "Xóa cuộc trò chuyện"
             : "";
   const deleteConfirmDescription =
     deleteConfirm?.type === "all"
-      ? "确认删除全部图片历史记录吗？删除后无法恢复。"
+      ? "Bạn có chắc muốn xóa toàn bộ lịch sử ảnh không? Sau khi xóa sẽ không thể khôi phục."
       : deleteConfirm?.type === "prompt"
-        ? "确认删除这条提示词记录吗？对应生成结果会保留。"
+        ? "Bạn có chắc muốn xóa bản ghi lời nhắc này không? Kết quả đã tạo tương ứng sẽ được giữ lại."
         : deleteConfirm?.type === "results"
-          ? "确认删除这条生成结果吗？对应提示词记录会保留。"
+          ? "Bạn có chắc muốn xóa kết quả đã tạo này không? Bản ghi lời nhắc tương ứng sẽ được giữ lại."
           : deleteConfirm?.type === "one"
-            ? "确认删除这条图片对话吗？删除后无法恢复。"
+            ? "Bạn có chắc muốn xóa cuộc trò chuyện ảnh này không? Sau khi xóa sẽ không thể khôi phục."
             : "";
 
   useEffect(() => {
@@ -428,7 +428,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
             : null) ?? pickFallbackConversationId(normalizedItems);
         setSelectedConversationId(nextSelectedConversationId);
       } catch (error) {
-        const message = error instanceof Error ? error.message : "读取会话记录失败";
+        const message = error instanceof Error ? error.message : "Không thể đọc lịch sử trò chuyện";
         toast.error(message);
       } finally {
         if (!cancelled) {
@@ -452,7 +452,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
       const data = await fetchAccounts();
       setAvailableQuota(formatAvailableQuota(data.items));
     } catch {
-      setAvailableQuota((prev) => (prev === "加载中..." ? "--" : prev));
+      setAvailableQuota((prev) => (prev === "Đang tải..." ? "--" : prev));
     }
   }, [isAdmin]);
 
@@ -582,7 +582,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
     try {
       await deleteImageConversation(id);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "删除会话失败";
+      const message = error instanceof Error ? error.message : "Không thể xóa cuộc trò chuyện";
       toast.error(message);
       const items = await listImageConversations();
       conversationsRef.current = items;
@@ -609,7 +609,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
           status: part === "results" && turn.status === "generating" ? "error" as const : turn.status,
           images:
             part === "results"
-              ? turn.images.map((image) => ({ id: image.id, status: "error" as const, error: "生成结果已删除" }))
+              ? turn.images.map((image) => ({ id: image.id, status: "error" as const, error: "Kết quả đã tạo đã bị xóa" }))
               : turn.images,
         };
         return nextTurn.promptDeleted && nextTurn.resultsDeleted ? null : nextTurn;
@@ -636,9 +636,9 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
       setConversations([]);
       setSelectedConversationId(null);
       resetComposer();
-      toast.success("已清空历史记录");
+      toast.success("Đã xóa toàn bộ lịch sử");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "清空历史记录失败";
+      const message = error instanceof Error ? error.message : "Không thể xóa toàn bộ lịch sử";
       toast.error(message);
     }
   };
@@ -698,7 +698,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
         fileInputRef.current.value = "";
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "读取参考图失败";
+      const message = error instanceof Error ? error.message : "Không thể đọc ảnh tham chiếu";
       toast.error(message);
     }
   }, []);
@@ -745,9 +745,9 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
         setReferenceImageFiles((prev) => [...prev, nextReference.file]);
         setImagePrompt("");
         textareaRef.current?.focus();
-        toast.success("已加入当前参考图，继续输入描述即可编辑");
+        toast.success("Đã thêm vào ảnh tham chiếu hiện tại, hãy nhập mô tả để tiếp tục chỉnh sửa");
       } catch (error) {
-        const message = error instanceof Error ? error.message : "读取结果图失败";
+        const message = error instanceof Error ? error.message : "Không thể đọc ảnh kết quả";
         toast.error(message);
       }
     },
@@ -773,7 +773,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
       fileInputRef.current.value = "";
     }
     textareaRef.current?.focus();
-    toast.success("已复用这条提示词配置");
+    toast.success("Đã dùng lại cấu hình lời nhắc này");
   }, []);
 
   const openLightbox = useCallback((images: ImageLightboxItem[], index: number) => {
@@ -867,7 +867,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
           dataUrlToFile(image.dataUrl, image.name || `${activeTurn.id}-${index + 1}.png`, image.type),
         );
         if (activeTurn.mode === "edit" && referenceFiles.length === 0) {
-          throw new Error("未找到可用于继续编辑的参考图");
+          throw new Error("Không tìm thấy ảnh tham chiếu để tiếp tục chỉnh sửa");
         }
 
         const pendingImages = activeTurn.images.filter((image) => image.status === "loading");
@@ -916,7 +916,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
 
         await loadQuota();
       } catch (error) {
-        const message = error instanceof Error ? error.message : "生成图片失败";
+        const message = error instanceof Error ? error.message : "Tạo ảnh thất bại";
         await updateConversation(conversationId, (current) => {
           const conversation = current ?? snapshot;
           return {
@@ -989,7 +989,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
       setSelectedConversationId(conversationId);
       await persistConversation(nextConversation);
       void runConversationQueue(conversationId);
-      toast.success("已加入重新生成队列");
+      toast.success("Đã thêm vào hàng đợi tạo lại");
     },
     [runConversationQueue],
   );
@@ -1058,7 +1058,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
   const handleSubmit = async () => {
     const prompt = imagePrompt.trim();
     if (!prompt) {
-      toast.error("请输入提示词");
+      toast.error("Vui lòng nhập lời nhắc");
       return;
     }
 
@@ -1105,11 +1105,11 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
 
     const targetStats = getImageConversationStats(baseConversation);
     if (targetStats.running > 0 || targetStats.queued > 1) {
-      toast.success("已加入当前对话队列");
+      toast.success("Đã thêm vào hàng đợi cuộc trò chuyện hiện tại");
     } else if (!targetConversation) {
-      toast.success("已创建新对话并开始处理");
+      toast.success("Đã tạo cuộc trò chuyện mới và bắt đầu xử lý");
     } else {
-      toast.success("已发送到当前对话");
+      toast.success("Đã gửi vào cuộc trò chuyện hiện tại");
     }
   };
 
@@ -1134,7 +1134,7 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
             <DialogHeader className="px-6 pt-7 pb-4 sm:px-8">
               <DialogTitle className="flex items-center gap-2 text-xl font-bold tracking-tight">
                 <History className="size-5" />
-                历史记录
+                Lịch sử
               </DialogTitle>
             </DialogHeader>
             <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 sm:px-8">
@@ -1167,14 +1167,14 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
               onClick={() => setIsHistoryOpen(true)}
             >
               <History className="mr-2 size-4" />
-              历史记录 ({conversations.length})
+              Lịch sử ({conversations.length})
             </Button>
             <Button
               className="h-10 rounded-2xl bg-stone-950 text-white shadow-sm"
               onClick={handleCreateDraft}
             >
               <Plus className="size-4" />
-              新建
+              Tạo mới
             </Button>
             <Button
               variant="outline"
@@ -1242,10 +1242,10 @@ function ImagePageContent({ isAdmin }: { isAdmin: boolean }) {
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDeleteConfirm(null)}>
-                取消
+                Hủy
               </Button>
               <Button className="bg-rose-600 text-white hover:bg-rose-700" onClick={() => void handleConfirmDelete()}>
-                确认删除
+                Xác nhận xóa
               </Button>
             </DialogFooter>
           </DialogContent>

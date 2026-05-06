@@ -43,7 +43,7 @@ def _next_domain(domains: list[str]) -> str:
     global domain_index
     domains = [str(item).strip() for item in domains if str(item).strip()]
     if not domains:
-        raise RuntimeError("mail.domain 不能为空")
+        raise RuntimeError("mail.domain khong duoc de trong")
     if len(domains) == 1:
         return domains[0]
     with domain_lock:
@@ -136,7 +136,7 @@ def _extract_code(message: dict[str, Any]) -> str | None:
     match = re.search(r"background-color:\s*#F3F3F3[^>]*>[\s\S]*?(\d{6})[\s\S]*?</p>", content, re.I)
     if match:
         return match.group(1)
-    match = re.search(r"(?:Verification code|code is|代码为|验证码)[:\s]*(\d{6})", content, re.I)
+    match = re.search(r"(?:Verification code|code is|\u4ee3\u7801\u4e3a|\u9a8c\u8bc1\u7801)[:\s]*(\d{6})", content, re.I)
     if match and match.group(1) != "177010":
         return match.group(1)
     for code in re.findall(r">\s*(\d{6})\s*<|(?<![#&])\b(\d{6})\b", content):
@@ -213,7 +213,7 @@ class CloudflareTempMailProvider(BaseMailProvider):
     def _request(self, method: str, path: str, headers: dict | None = None, params: dict | None = None, payload: dict | None = None, expected: tuple[int, ...] = (200,)):
         resp = self.session.request(method.upper(), f"{self.api_base}{path}", headers={"Content-Type": "application/json", "User-Agent": self.conf["user_agent"], **(headers or {})}, params=params, json=payload, timeout=self.conf["request_timeout"], verify=False)
         if resp.status_code not in expected:
-            raise RuntimeError(f"CloudflareTempMail 请求失败: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
+            raise RuntimeError(f"CloudflareTempMail request failed: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
         return {} if resp.status_code == 204 else resp.json()
 
     def create_mailbox(self, username: str | None = None) -> dict[str, Any]:
@@ -221,7 +221,7 @@ class CloudflareTempMailProvider(BaseMailProvider):
         address = str(data.get("address") or "").strip()
         token = str(data.get("jwt") or "").strip()
         if not address or not token:
-            raise RuntimeError("CloudflareTempMail 缺少 address 或 jwt")
+            raise RuntimeError("CloudflareTempMail missing address or jwt")
         return {"provider": self.name, "provider_ref": self.provider_ref, "address": address, "token": token}
 
     def fetch_latest_message(self, mailbox: dict[str, Any]) -> dict[str, Any] | None:
@@ -264,10 +264,10 @@ class TempMailLolProvider(BaseMailProvider):
     def _request(self, method: str, path: str, params: dict | None = None, payload: dict | None = None, expected: tuple[int, ...] = (200,)):
         resp = self.session.request(method.upper(), f"https://api.tempmail.lol/v2{path}", params=params, json=payload, timeout=self.conf["request_timeout"], verify=False)
         if resp.status_code not in expected:
-            raise RuntimeError(f"TempMail.lol 请求失败: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
+            raise RuntimeError(f"TempMail.lol request failed: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
         data = resp.json()
         if not isinstance(data, dict):
-            raise RuntimeError(f"TempMail.lol {method} {path} 返回结构不是对象")
+            raise RuntimeError(f"TempMail.lol {method} {path} response is not an object")
         return data
 
     def create_mailbox(self, username: str | None = None) -> dict[str, Any]:
@@ -283,7 +283,7 @@ class TempMailLolProvider(BaseMailProvider):
         address = str(data.get("address") or "").strip()
         token = str(data.get("token") or "").strip()
         if not address or not token:
-            raise RuntimeError("TempMail.lol 缺少 address 或 token")
+            raise RuntimeError("TempMail.lol missing address or token")
         return {"provider": self.name, "provider_ref": self.provider_ref, "address": address, "token": token}
 
     def fetch_latest_message(self, mailbox: dict[str, Any]) -> dict[str, Any] | None:
@@ -315,7 +315,7 @@ class DuckMailProvider(BaseMailProvider):
         headers = {"Authorization": f"Bearer {self.api_key if use_api_key else token}"} if use_api_key or token else {}
         resp = self.session.request(method.upper(), f"https://api.duckmail.sbs{path}", headers=headers, params=params, json=payload, timeout=self.conf["request_timeout"], verify=False)
         if resp.status_code not in expected:
-            raise RuntimeError(f"DuckMail 请求失败: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
+            raise RuntimeError(f"DuckMail request failed: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
         return {} if resp.status_code == 204 else resp.json()
 
     @staticmethod
@@ -368,7 +368,7 @@ class GptMailProvider(BaseMailProvider):
         query = dict(params or {})
         resp = self.session.request(method.upper(), f"https://mail.chatgpt.org.uk{path}", params=query, json=payload, timeout=self.conf["request_timeout"], verify=False)
         if resp.status_code != 200:
-            raise RuntimeError(f"GPTMail 请求失败: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
+            raise RuntimeError(f"GPTMail request failed: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
         data = resp.json()
         return data["data"] if isinstance(data, dict) and "data" in data else data
 
@@ -409,10 +409,10 @@ class MoEmailProvider(BaseMailProvider):
     def _request(self, method: str, path: str, params: dict | None = None, payload: dict | None = None, expected: tuple[int, ...] = (200,)):
         resp = self.session.request(method.upper(), f"{self.api_base}{path}", headers={"X-API-Key": self.api_key, "Content-Type": "application/json", "User-Agent": self.conf["user_agent"]}, params=params, json=payload, timeout=self.conf["request_timeout"], verify=False)
         if resp.status_code not in expected:
-            raise RuntimeError(f"MoEmail 请求失败: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
+            raise RuntimeError(f"MoEmail request failed: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
         data = resp.json()
         if not isinstance(data, dict):
-            raise RuntimeError(f"MoEmail {method} {path} 返回结构不是对象")
+            raise RuntimeError(f"MoEmail {method} {path} response is not an object")
         return data
 
     def create_mailbox(self, username: str | None = None) -> dict[str, Any]:
@@ -420,13 +420,13 @@ class MoEmailProvider(BaseMailProvider):
         address = str(data.get("email") or "").strip()
         email_id = str(data.get("id") or data.get("email_id") or "").strip()
         if not address or not email_id:
-            raise RuntimeError("MoEmail 缺少 email 或 id")
+            raise RuntimeError("MoEmail missing email or id")
         return {"provider": self.name, "provider_ref": self.provider_ref, "address": address, "email_id": email_id}
 
     def fetch_latest_message(self, mailbox: dict[str, Any]) -> dict[str, Any] | None:
         email_id = str(mailbox.get("email_id") or "").strip()
         if not email_id:
-            raise RuntimeError("MoEmail 缺少 email_id")
+            raise RuntimeError("MoEmail missing email_id")
         data = self._request("GET", f"/api/emails/{email_id}")
         items = data.get("messages") or []
         messages = [item for item in items if isinstance(item, dict)] if isinstance(items, list) else []
@@ -473,7 +473,7 @@ class InbucketMailProvider(BaseMailProvider):
             verify=False,
         )
         if resp.status_code not in expected:
-            raise RuntimeError(f"Inbucket 请求失败: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
+            raise RuntimeError(f"Inbucket request failed: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
         if resp.status_code == 204:
             return {}
         content_type = str(resp.headers.get("content-type") or "").lower()
@@ -484,7 +484,7 @@ class InbucketMailProvider(BaseMailProvider):
     def _resolve_domain(self) -> str:
         if self.domain:
             return _next_domain(self.domain)
-        raise RuntimeError("Inbucket 需要至少配置一个 domain")
+        raise RuntimeError("Inbucket requires at least one configured domain")
 
     def _mailbox_name(self, address: str) -> str:
         local_part, _, _ = str(address or "").partition("@")
@@ -507,7 +507,7 @@ class InbucketMailProvider(BaseMailProvider):
     def fetch_latest_message(self, mailbox: dict[str, Any]) -> dict[str, Any] | None:
         mailbox_name = str(mailbox.get("mailbox_name") or self._mailbox_name(str(mailbox.get("address") or ""))).strip()
         if not mailbox_name:
-            raise RuntimeError("Inbucket 缺少 mailbox_name")
+            raise RuntimeError("Inbucket missing mailbox_name")
         data = self._request("GET", f"/api/v1/mailbox/{mailbox_name}")
         items = [item for item in data if isinstance(item, dict)] if isinstance(data, list) else []
         if not items:
@@ -567,12 +567,12 @@ class YydsMailProvider(BaseMailProvider):
         headers = {"Authorization": f"Bearer {token}"} if token else {"X-API-Key": self.api_key}
         resp = self.session.request(method.upper(), f"{self.api_base}{path}", headers=headers, params=params, json=payload, timeout=self.conf["request_timeout"], verify=False)
         if resp.status_code not in expected:
-            raise RuntimeError(f"YYDSMail 请求失败: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
+            raise RuntimeError(f"YYDSMail request failed: {method} {path}, HTTP {resp.status_code}, body={resp.text[:300]}")
         if resp.status_code == 204:
             return {}
         data = resp.json()
         if isinstance(data, dict) and data.get("success") is False:
-            raise RuntimeError(f"YYDSMail 请求失败: {data.get('errorCode') or data.get('error')}")
+            raise RuntimeError(f"YYDSMail request failed: {data.get('errorCode') or data.get('error')}")
         return data.get("data") if isinstance(data, dict) and isinstance(data.get("data"), (dict, list)) else data
 
     @staticmethod
@@ -589,7 +589,7 @@ class YydsMailProvider(BaseMailProvider):
         address = str(data.get("address") or data.get("email") or "").strip()
         token = str(data.get("token") or data.get("temp_token") or data.get("tempToken") or data.get("access_token") or "").strip()
         if not address or not token:
-            raise RuntimeError("YYDSMail 缺少 address 或 token")
+            raise RuntimeError("YYDSMail missing address or token")
         return {"provider": self.name, "provider_ref": self.provider_ref, "address": address, "token": token, "account_id": str(data.get("id") or "")}
 
     def fetch_latest_message(self, mailbox: dict[str, Any]) -> dict[str, Any] | None:
@@ -618,7 +618,7 @@ def _entries(mail_config: dict) -> list[dict]:
 def _enabled_entries(mail_config: dict) -> list[dict]:
     items = [item for item in _entries(mail_config) if item.get("enable")]
     if not items:
-        raise RuntimeError("mail.providers 没有启用的 provider")
+        raise RuntimeError("mail.providers has no enabled provider")
     return items
 
 
@@ -651,7 +651,7 @@ def _create_provider(mail_config: dict, provider: str = "", provider_ref: str = 
         return InbucketMailProvider(entry, conf)
     if entry["type"] == "yyds_mail":
         return YydsMailProvider(entry, conf)
-    raise RuntimeError(f"不支持的 mail.provider: {entry['type']}")
+    raise RuntimeError(f"Unsupported mail.provider: {entry['type']}")
 
 
 def create_mailbox(mail_config: dict, username: str | None = None) -> dict:

@@ -116,7 +116,7 @@ def log(text: str, color: str = "") -> None:
 
 
 def step(index: int, text: str, color: str = "") -> None:
-    log(f"[任务{index}] {text}", color)
+    log(f"[Tac vu {index}] {text}", color)
 
 
 def _make_trace_headers() -> dict[str, str]:
@@ -448,7 +448,7 @@ class PlatformRegistrar:
         return headers
 
     def _platform_authorize(self, email: str, index: int) -> None:
-        step(index, "开始 platform authorize")
+        step(index, "Bat dau platform authorize")
         self.session.cookies.set("oai-did", self.device_id, domain=".auth.openai.com")
         self.session.cookies.set("oai-did", self.device_id, domain="auth.openai.com")
         _, code_challenge = _generate_pkce()
@@ -475,50 +475,50 @@ class PlatformRegistrar:
             err = _response_json(resp).get("error", {}) if resp is not None else {}
             detail = f": {err.get('code', '')} - {err.get('message', '')}".strip(" -") if err else ""
             raise RuntimeError(error or f"platform_authorize_http_{getattr(resp, 'status_code', 'unknown')}{detail}")
-        step(index, "platform authorize 完成")
+        step(index, "Hoan tat platform authorize")
 
     def _register_user(self, email: str, password: str, index: int) -> None:
-        step(index, "开始提交注册密码")
+        step(index, "Bat dau gui mat khau dang ky")
         headers = self._json_headers(f"{auth_base}/create-account/password")
         headers["openai-sentinel-token"] = build_sentinel_token(self.session, self.device_id, "username_password_create")
         resp, error = request_with_local_retry(self.session, "post", f"{auth_base}/api/accounts/user/register", json={"username": email, "password": password}, headers=headers, verify=False)
         if resp is None or resp.status_code != 200:
             data = _response_json(resp) if resp is not None else {}
             if data.get("message") == "Failed to create account. Please try again.":
-                step(index, "注册失败提示: 邮箱域名很可能因滥用被封禁，请更换邮箱域名", "yellow")
+                step(index, "Dang ky that bai: ten mien email co the da bi chan do lam dung, hay doi ten mien email", "yellow")
             detail = f", detail={json.dumps(data, ensure_ascii=False)}" if data else ""
             raise RuntimeError(error or f"user_register_http_{getattr(resp, 'status_code', 'unknown')}{detail}")
-        step(index, "提交注册密码完成")
+        step(index, "Da gui mat khau dang ky")
 
     def _send_otp(self, index: int) -> None:
-        step(index, "开始发送验证码")
+        step(index, "Bat dau gui ma xac minh")
         resp, error = request_with_local_retry(self.session, "get", f"{auth_base}/api/accounts/email-otp/send", headers=self._navigate_headers(f"{auth_base}/create-account/password"), allow_redirects=True, verify=False)
         if resp is None or resp.status_code not in (200, 302):
             raise RuntimeError(error or f"send_otp_http_{getattr(resp, 'status_code', 'unknown')}")
-        step(index, "发送验证码完成")
+        step(index, "Da gui ma xac minh")
 
     def _validate_otp(self, code: str, index: int) -> None:
-        step(index, f"开始校验验证码 {code}")
+        step(index, f"Bat dau kiem tra ma xac minh {code}")
         resp, error = validate_otp(self.session, self.device_id, code)
         if resp is None or resp.status_code != 200:
             raise RuntimeError(error or f"validate_otp_http_{getattr(resp, 'status_code', 'unknown')}")
-        step(index, "验证码校验完成")
+        step(index, "Da kiem tra ma xac minh")
 
     def _create_account(self, name: str, birthdate: str, index: int) -> None:
-        step(index, "开始创建账号资料")
+        step(index, "Bat dau tao ho so tai khoan")
         headers = self._json_headers(f"{auth_base}/about-you")
         headers["openai-sentinel-token"] = build_sentinel_token(self.session, self.device_id, "oauth_create_account")
         resp, error = request_with_local_retry(self.session, "post", f"{auth_base}/api/accounts/create_account", json={"name": name, "birthdate": birthdate}, headers=headers, verify=False)
         if resp is None or resp.status_code not in (200, 302):
             data = _response_json(resp) if resp is not None else {}
             if data.get("message") == "Failed to create account. Please try again.":
-                step(index, "创建账号失败提示: 邮箱域名很可能因滥用被封禁，请更换邮箱域名", "yellow")
+                step(index, "Tao tai khoan that bai: ten mien email co the da bi chan do lam dung, hay doi ten mien email", "yellow")
             detail = f", detail={json.dumps(data, ensure_ascii=False)}" if data else ""
             raise RuntimeError(error or f"create_account_http_{getattr(resp, 'status_code', 'unknown')}{detail}")
-        step(index, "创建账号资料完成")
+        step(index, "Da tao ho so tai khoan")
 
     def _login_and_exchange_tokens(self, email: str, password: str, mailbox: dict, index: int) -> dict:
-        step(index, "开始独立登录换 token")
+        step(index, "Bat dau dang nhap rieng de doi token")
         code_verifier, code_challenge = _generate_pkce()
         params = {
             "issuer": auth_base,
@@ -541,55 +541,55 @@ class PlatformRegistrar:
         resp, error = request_with_local_retry(self.session, "get", f"{auth_base}/api/accounts/authorize?{urlencode(params)}", headers=self._navigate_headers(f"{platform_base}/"), allow_redirects=True, verify=False)
         if resp is None:
             raise RuntimeError(error or "platform_login_authorize_failed")
-        step(index, "登录 authorize 完成")
+        step(index, "Da authorize dang nhap")
         headers = self._json_headers(f"{auth_base}/log-in/password")
         headers["openai-sentinel-token"] = build_sentinel_token(self.session, self.device_id, "password_verify")
         resp, error = request_with_local_retry(self.session, "post", f"{auth_base}/api/accounts/password/verify", json={"password": password}, headers=headers, allow_redirects=False, verify=False)
         if resp is None or resp.status_code != 200:
             raise RuntimeError(error or f"password_verify_http_{getattr(resp, 'status_code', 'unknown')}")
-        step(index, "密码校验完成")
+        step(index, "Da xac minh mat khau")
         payload = _response_json(resp)
         continue_url = str(payload.get("continue_url") or "").strip()
         page_type = str(((payload.get("page") or {}).get("type")) or "")
         if page_type == "email_otp_verification" or "email-verification" in continue_url or "email-otp" in continue_url:
-            step(index, "独立登录需要邮箱验证码")
+            step(index, "Dang nhap rieng can ma xac minh email")
             code = wait_for_code(mailbox)
             if not code:
-                raise RuntimeError("独立登录等待验证码超时")
+                raise RuntimeError("Dang nhap rieng cho ma xac minh qua thoi gian")
             resp, reason = validate_otp(self.session, self.device_id, code)
             if resp is None or resp.status_code != 200:
-                print("独立登录验证码校验失败响应:", resp.text if resp is not None else "None")
+                print("Phan hoi khi kiem tra ma xac minh dang nhap rieng that bai:", resp.text if resp is not None else "None")
                 data = _response_json(resp) if resp is not None else {}
                 message = str((data.get("error") or {}).get("message") or data.get("message") or "").strip()
-                raise RuntimeError(reason or f"独立登录验证码校验失败{': ' + message if message else ''}")
+                raise RuntimeError(reason or f"Kiem tra ma xac minh dang nhap rieng that bai{': ' + message if message else ''}")
             otp_payload = _response_json(resp)
             continue_url = str(otp_payload.get("continue_url") or continue_url).strip()
-            step(index, "独立登录验证码校验完成")
+            step(index, "Da kiem tra ma xac minh dang nhap rieng")
         if not continue_url:
             continue_url = f"{auth_base}/sign-in-with-chatgpt/codex/consent"
         tokens = exchange_platform_tokens(self.session, self.device_id, code_verifier, continue_url)
         if not tokens:
-            raise RuntimeError("token换取失败")
-        step(index, "token 换取完成")
+            raise RuntimeError("Doi token that bai")
+        step(index, "Da doi token")
         return tokens
 
     def register(self, index: int) -> dict:
-        step(index, "开始创建邮箱")
+        step(index, "Bat dau tao email")
         mailbox = create_mailbox()
         email = str(mailbox.get("address") or "").strip()
         if not email:
-            raise RuntimeError("邮箱服务未返回 address")
-        step(index, f"邮箱创建完成: {email}")
+            raise RuntimeError("Dich vu email khong tra ve address")
+        step(index, f"Da tao email: {email}")
         password = _random_password()
         first_name, last_name = _random_name()
         self._platform_authorize(email, index)
         self._register_user(email, password, index)
         self._send_otp(index)
-        step(index, "开始等待注册验证码")
+        step(index, "Bat dau cho ma xac minh dang ky")
         code = wait_for_code(mailbox)
         if not code:
-            raise RuntimeError("等待注册验证码超时")
-        step(index, f"收到注册验证码: {code}")
+            raise RuntimeError("Cho ma xac minh dang ky qua thoi gian")
+        step(index, f"Da nhan ma xac minh dang ky: {code}")
         self._validate_otp(code, index)
         self._create_account(f"{first_name} {last_name}", _random_birthdate(), index)
         tokens = self._login_and_exchange_tokens(email, password, mailbox, index)
@@ -607,7 +607,7 @@ def worker(index: int) -> dict:
     start = time.time()
     registrar = PlatformRegistrar(config["proxy"])
     try:
-        step(index, "任务启动")
+        step(index, "Tac vu da bat dau")
         result = registrar.register(index)
         cost = time.time() - start
         access_token = str(result["access_token"])
@@ -617,14 +617,14 @@ def worker(index: int) -> dict:
             stats["done"] += 1
             stats["success"] += 1
             avg = (time.time() - stats["start_time"]) / stats["success"]
-        log(f'{result["email"]} 注册成功，本次耗时{cost:.1f}s，全局平均每个号注册耗时{avg:.1f}s', "green")
+        log(f'{result["email"]} dang ky thanh cong, lan nay mat {cost:.1f}s, trung binh toan cuc moi tai khoan mat {avg:.1f}s', "green")
         return {"ok": True, "index": index, "result": result}
     except Exception as e:
         cost = time.time() - start
         with stats_lock:
             stats["done"] += 1
             stats["fail"] += 1
-        log(f"任务{index} 注册失败，本次耗时{cost:.1f}s，原因: {e}", "red")
+        log(f"Tac vu {index} dang ky that bai, lan nay mat {cost:.1f}s, ly do: {e}", "red")
         return {"ok": False, "index": index, "error": str(e)}
     finally:
         registrar.close()

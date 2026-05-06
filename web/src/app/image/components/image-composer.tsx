@@ -52,14 +52,14 @@ export function ImageComposer({
     [referenceImages],
   );
   const imageSizeOptions = [
-    { value: "", label: "未指定" },
-    { value: "1:1", label: "1:1 (正方形)" },
-    { value: "16:9", label: "16:9 (横版)" },
-    { value: "4:3", label: "4:3 (横版)" },
-    { value: "3:4", label: "3:4 (竖版)" },
-    { value: "9:16", label: "9:16 (竖版)" },
+    { value: "", label: "Không chỉ định" },
+    { value: "1:1", label: "1:1 (vuông)" },
+    { value: "16:9", label: "16:9 (ngang)" },
+    { value: "4:3", label: "4:3 (ngang)" },
+    { value: "3:4", label: "3:4 (dọc)" },
+    { value: "9:16", label: "9:16 (dọc)" },
   ];
-  const imageSizeLabel = imageSizeOptions.find((option) => option.value === imageSize)?.label || "未指定";
+  const imageSizeLabel = imageSizeOptions.find((option) => option.value === imageSize)?.label || "Không chỉ định";
 
   useEffect(() => {
     if (!isSizeMenuOpen) {
@@ -111,11 +111,11 @@ export function ImageComposer({
                     setLightboxOpen(true);
                   }}
                   className="group size-14 overflow-hidden rounded-2xl border border-stone-200 bg-stone-50 transition hover:border-stone-300 sm:size-16"
-                  aria-label={`预览参考图 ${image.name || index + 1}`}
+                  aria-label={`Xem trước ảnh tham chiếu ${image.name || index + 1}`}
                 >
                   <img
                     src={image.dataUrl}
-                    alt={image.name || `参考图 ${index + 1}`}
+                    alt={image.name || `Ảnh tham chiếu ${index + 1}`}
                     className="h-full w-full object-cover"
                   />
                 </button>
@@ -126,7 +126,7 @@ export function ImageComposer({
                     onRemoveReferenceImage(index);
                   }}
                   className="absolute -right-1 -top-1 inline-flex size-5 items-center justify-center rounded-full border border-stone-200 bg-white text-stone-500 transition hover:border-stone-300 hover:text-stone-800"
-                  aria-label={`移除参考图 ${image.name || index + 1}`}
+                  aria-label={`Xóa ảnh tham chiếu ${image.name || index + 1}`}
                 >
                   <X className="size-3" />
                 </button>
@@ -135,7 +135,7 @@ export function ImageComposer({
           </div>
         ) : null}
 
-        <div className="overflow-hidden rounded-[24px] border border-stone-200 bg-white shadow-[0_14px_60px_-42px_rgba(15,23,42,0.45)] sm:rounded-[32px] sm:shadow-none">
+        <div className="overflow-visible rounded-[24px] border border-stone-200 bg-white shadow-[0_14px_60px_-42px_rgba(15,23,42,0.45)] sm:rounded-[32px] sm:shadow-none">
           <div
             className="relative cursor-text"
             onClick={() => {
@@ -156,8 +156,8 @@ export function ImageComposer({
               onPaste={handleTextareaPaste}
               placeholder={
                 referenceImages.length > 0
-                  ? "描述你希望如何修改参考图"
-                  : "输入你想要生成的画面，也可直接粘贴图片"
+                  ? "Mô tả cách bạn muốn chỉnh sửa ảnh tham chiếu"
+                  : "Nhập mô tả hình ảnh bạn muốn tạo, hoặc dán ảnh trực tiếp"
               }
               onKeyDown={(event) => {
                 if (event.key === "Enter" && !event.shiftKey) {
@@ -178,19 +178,19 @@ export function ImageComposer({
                     onClick={onPickReferenceImage}
                   >
                     <ImagePlus className="size-3.5 sm:size-4" />
-                    <span>{referenceImages.length > 0 ? "添加参考图" : "上传"}</span>
+                    <span>{referenceImages.length > 0 ? "Thêm ảnh tham chiếu" : "Tải lên"}</span>
                   </Button>
                   <div className="shrink-0 rounded-full bg-stone-100 px-2 py-1 text-[10px] font-medium text-stone-600 sm:px-3 sm:py-2 sm:text-xs">
-                    <span className="hidden sm:inline">剩余额度 </span>{availableQuota}
+                    <span className="hidden sm:inline">Hạn mức còn lại </span>{availableQuota}
                   </div>
                   {activeTaskCount > 0 && (
                     <div className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-[10px] font-medium text-amber-700 sm:gap-1.5 sm:px-3 sm:py-2 sm:text-xs">
                       <LoaderCircle className="size-3 animate-spin" />
-                      {activeTaskCount}<span className="hidden sm:inline"> 个任务处理中</span>
+                      {activeTaskCount}<span className="hidden sm:inline"> tác vụ đang xử lý</span>
                     </div>
                   )}
                   <div className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-stone-200 bg-white px-2 py-0.5 sm:h-auto sm:gap-2 sm:px-3 sm:py-1">
-                    <span className="text-[11px] font-medium text-stone-700 sm:text-sm">张数</span>
+                    <span className="text-[11px] font-medium text-stone-700 sm:text-sm">Số lượng</span>
                     <Input
                       type="number"
                       inputMode="numeric"
@@ -204,19 +204,19 @@ export function ImageComposer({
                   </div>
                   <div
                     ref={sizeMenuRef}
-                    className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] sm:h-auto sm:gap-2 sm:px-3 sm:py-1 sm:text-[13px]"
+                    className="relative flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-stone-300 bg-white px-2 py-0.5 text-[11px] shadow-[inset_0_0_0_1px_rgba(231,229,228,0.55)] sm:h-auto sm:gap-2 sm:px-3 sm:py-1 sm:text-[13px]"
                   >
-                    <span className="font-medium text-stone-700 sm:text-sm">比例</span>
+                    <span className="font-medium text-stone-700 sm:text-sm">Tỷ lệ</span>
                     <button
                       type="button"
-                      className="flex h-7 w-[78px] items-center justify-between bg-transparent text-left text-xs font-bold text-stone-700 min-[390px]:w-[96px] sm:h-8 sm:w-[132px]"
+                      className="flex h-7 w-[78px] items-center justify-between rounded-full border border-stone-200 bg-stone-50/80 px-2 text-left text-xs font-bold text-stone-700 transition hover:border-stone-300 hover:bg-white min-[390px]:w-[96px] sm:h-8 sm:w-[132px]"
                       onClick={() => setIsSizeMenuOpen((open) => !open)}
                     >
                       <span className="truncate">{imageSizeLabel}</span>
                       <ChevronDown className={cn("size-4 shrink-0 opacity-60 transition", isSizeMenuOpen && "rotate-180")} />
                     </button>
                     {isSizeMenuOpen ? (
-                      <div className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+5.75rem)] z-[80] max-h-[45dvh] overflow-y-auto rounded-3xl border border-white/80 bg-white p-2 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.35)] sm:absolute sm:inset-x-auto sm:bottom-[calc(100%+10px)] sm:left-0 sm:w-[186px]">
+                      <div className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+5.75rem)] z-[80] max-h-[45dvh] overflow-y-auto rounded-3xl border border-stone-200 bg-white p-2 shadow-[0_24px_80px_-32px_rgba(15,23,42,0.35)] sm:absolute sm:inset-x-auto sm:bottom-[calc(100%+10px)] sm:left-0 sm:w-[186px]">
                         {imageSizeOptions.map((option) => {
                           const active = option.value === imageSize;
                           return (
@@ -248,7 +248,7 @@ export function ImageComposer({
                   onClick={() => void onSubmit()}
                   disabled={!prompt.trim()}
                   className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-stone-950 text-white transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-300 sm:size-11"
-                  aria-label={referenceImages.length > 0 ? "编辑图片" : "生成图片"}
+                  aria-label={referenceImages.length > 0 ? "Chỉnh sửa ảnh" : "Tạo ảnh"}
                 >
                   <ArrowUp className="size-3.5 sm:size-4" />
                 </button>
